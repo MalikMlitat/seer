@@ -2,9 +2,9 @@ name: ubuntu-latest Developement Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ malik/addDebianPkgWorkflow ]
   pull_request:
-    branches: [ main ]
+    branches: [ malik/addDebianPkgWorkflow ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -79,8 +79,18 @@ jobs:
 
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install build-essential dpkg-dev equivs
+        sudo apt-get -y install devscripts build-essential dpkg-dev equivs
         sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' debian/control
 
     - name: Build Debian package
       run:  dpkg-buildpackage --unsigned-source --unsigned-changes
+
+    - name: Upload debian package Release
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        automatic_release_tag: "debian-pkg-latest"
+        prerelease: true
+        title: "Debian Package Release"
+        files: |
+          ../seergdb_*_amd64.deb
